@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      ptero_net:
+        ipv4_address: 172.20.0.2
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      ptero_net:
+        ipv4_address: 172.20.0.3
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  panel:
+    image: ghcr.io/pterodactyl/panel:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - APP_KEY=${APP_KEY}
+      - APP_THEME=${APP_THEME}
+      - APP_TIMEZONE=${APP_TIMEZONE}
+      - APP_LOCALE=${APP_LOCALE}
+      - APP_URL=${APP_URL}
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
+      - CACHE_DRIVER=${CACHE_DRIVER}
+      - SESSION_DRIVER=${SESSION_DRIVER}
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION}
+      - MAIL_DRIVER=${MAIL_DRIVER}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES}
+      # Inject custom env vars for auto-seeder
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_FIRST_NAME=${ADMIN_FIRST_NAME}
+      - ADMIN_LAST_NAME=${ADMIN_LAST_NAME}
+      - NODE_NAME=${NODE_NAME}
+      - NODE_LOCATION=${NODE_LOCATION}
+      - NODE_FQDN=${NODE_FQDN}
+      - NODE_SCHEME=${NODE_SCHEME}
+      - NODE_MEMORY=${NODE_MEMORY}
+      - NODE_DISK=${NODE_DISK}
+      - NODE_DAEMON_LISTEN=${NODE_DAEMON_LISTEN}
+      - NODE_DAEMON_SFTP=${NODE_DAEMON_SFTP}
+      - ALLOCATION_PORTS=${ALLOCATION_PORTS}
+    volumes:
+      - panel_var:/app/var/
+      - panel_nginx:/etc/nginx/http.d/
+      - panel_logs:/app/storage/logs/
+      - ./scripts:/scripts:ro
+    networks:
+      ptero_net:
+        ipv4_address: 172.20.0.10
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
+  wings:
+    image: ghcr.io/pterodactyl/wings:latest
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8080:8080"
+      - "2022:2022"
+      - "25565-25570:25565-25570"
+    environment:
+      - TZ=${APP_TIMEZONE}
+      - WINGS_UID=988
+      - WINGS_GID=988
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - ./lib/wings:/etc/pterodactyl
+      - wings_data:/var/lib/pterodactyl
+      - wings_logs:/var/log/pterodactyl
+    networks:
+      ptero_net:
+        ipv4_address: 172.20.0.11
+    depends_on:
+      - panel
+
+networks:
+  ptero_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  mariadb_data:
+  redis_data:
+  panel_var:
+  panel_nginx:
+  panel_logs:
+  wings_data:
+  wings_logs:

@@ -1,0 +1,6 @@
+.env
+lib/wings/*
+logs/*
+install.log
+!lib/wings/.gitkeep
+!logs/.gitkeep
