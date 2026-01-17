@@ -1,0 +1,16 @@
+debug: false
+uuid: 85daad99-3df6-47d8-ae42-e7d1c7dec2b1
+token_id: yjs3D0T2UMjlpISr
+token: kc06k9CFIgc1W70oO4rLH1TbcLyALkyb5ku8h2sO9qzuecUFiRWPPkXOPRHR2QAx
+api:
+  host: 0.0.0.0
+  port: 8080
+  ssl:
+    enabled: false
+  upload_limit: 100
+system:
+  data: /var/lib/pterodactyl/volumes
+  sftp:
+    bind_port: 2022
+allowed_mounts: []
+remote: 'http://panel:80'
