@@ -27,7 +27,7 @@ $config = [
     'token' => $node->daemon_token,
     'api' => [
         'host' => '0.0.0.0',
-        'port' => (int) $node->daemonListen,
+        'port' => (int) $node->daemon_listen,
         'ssl' => [
             'enabled' => false,
         ],
@@ -36,7 +36,7 @@ $config = [
     'system' => [
         'data' => '/var/lib/pterodactyl/volumes',
         'sftp' => [
-            'bind_port' => (int) $node->daemonSFTP,
+            'bind_port' => (int) $node->daemon_sftp,
         ],
     ],
     'allowed_mounts' => [],
@@ -44,4 +44,4 @@ $config = [
 ];
 
 // Output YAML
-echo Yaml::dump($config, 4, 2, Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE);
+echo Yaml::dump($config, 4, 2);

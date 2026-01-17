@@ -29,17 +29,22 @@ if [ ! -f .env ]; then
     log "Created .env from example."
 fi
 
+# Load environment variables (needed for DB password)
+source .env
+
 # Auto-detect Codespace URL
 if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
     CODESPACE_URL="https://${CODESPACE_NAME}-80.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
     log "Detected Codespace URL: ${CODESPACE_URL}"
     
-    # Update .env
+    # Update .env using a different separator for sed to avoid issues with / in URL
     sed -i "s|APP_URL=.*|APP_URL=${CODESPACE_URL}|g" .env
     sed -i "s|CODESPACE_NAME=.*|CODESPACE_NAME=${CODESPACE_NAME}|g" .env
     sed -i "s|GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=.*|GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}|g" .env
 else
-    warn "Not running in Codespaces or variables missing. Using default APP_URL."
+    # Fallback for local or if variables are missing
+    CODESPACE_URL=$(grep APP_URL .env | cut -d '=' -f2)
+    warn "Not running in Codespaces or variables missing. Using existing APP_URL: ${CODESPACE_URL}"
 fi
 
 # Create directories
@@ -51,7 +56,7 @@ log "Starting MariaDB and Redis..."
 docker compose up -d mariadb cache
 
 log "Waiting for database to be ready..."
-timeout 60 bash -c 'until docker compose exec -T mariadb mysqladmin ping -h localhost --silent; do sleep 2; done'
+timeout 60 bash -c "until docker compose exec -T mariadb mysqladmin ping -h localhost -u root -p${DB_PASSWORD} --silent; do sleep 2; done"
 log "✅ Database is ready."
 
 # --- 4. Initialize Panel ---

@@ -1,0 +1,32 @@
+{
+  "name": "Pterodactyl Codespace",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "panel",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [80, 443, 8080, 2022, 3000],
+  "portsAttributes": {
+    "80": {
+      "label": "Panel",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    },
+    "8080": {
+      "label": "Wings",
+      "visibility": "public"
+    },
+    "3000": {
+      "label": "Keep-Alive",
+      "visibility": "public"
+    }
+  },
+  "postCreateCommand": "bash install.sh",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md", "install.sh"]
+    }
+  }
+}

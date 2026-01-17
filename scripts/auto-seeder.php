@@ -27,7 +27,7 @@ if (!$user) {
     $user->name_last = getenv('ADMIN_LAST_NAME');
     $user->root_admin = true;
     $user->language = 'en';
-    $user->uuid = Str::uuid()->toString();
+    $user->uuid = Str::uuid();
     $user->save();
     echo "✅ Admin user created: {$email}\n";
 } else {
@@ -67,10 +67,10 @@ if (!$node) {
     $node->disk = (int) getenv('NODE_DISK');
     $node->disk_overallocate = 0;
     $node->upload_size = 100;
-    $node->daemonListen = (int) getenv('NODE_DAEMON_LISTEN');
-    $node->daemonSFTP = (int) getenv('NODE_DAEMON_SFTP');
-    $node->daemonBase = '/var/lib/pterodactyl/volumes';
-    $node->uuid = Str::uuid()->toString();
+    $node->daemon_listen = (int) getenv('NODE_DAEMON_LISTEN');
+    $node->daemon_sftp = (int) getenv('NODE_DAEMON_SFTP');
+    $node->daemon_base = '/var/lib/pterodactyl/volumes';
+    $node->uuid = Str::uuid();
     $node->daemon_token_id = Str::random(16);
     $node->daemon_token = Str::random(64);
     $node->save();
