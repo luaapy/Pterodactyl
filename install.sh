@@ -29,8 +29,12 @@ if [ ! -f .env ]; then
     log "Created .env from example."
 fi
 
-# Load environment variables (needed for DB password)
-source .env
+# Load environment variables and export them for sub-processes
+if [ -f .env ]; then
+    set -a
+    source .env
+    set +a
+fi
 
 # Auto-detect Codespace URL
 if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
