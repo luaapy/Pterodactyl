@@ -63,6 +63,7 @@ services:
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
       - TRUSTED_PROXIES=${TRUSTED_PROXIES}
+      - RECAPTCHA_ENABLED=false
       # Inject custom env vars for auto-seeder
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
