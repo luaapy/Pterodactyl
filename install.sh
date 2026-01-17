@@ -60,7 +60,16 @@ log "Starting MariaDB and Redis..."
 docker compose up -d mariadb cache
 
 log "Waiting for database to be ready..."
-timeout 60 bash -c "until docker compose exec -T mariadb mysqladmin ping -h localhost -u root -p${DB_PASSWORD} --silent; do sleep 2; done"
+RETRIES=30
+until docker compose exec -T mariadb mysqladmin ping -h localhost -u root -p"${DB_PASSWORD}" --silent || [ $RETRIES -eq 0 ]; do
+    sleep 2
+    RETRIES=$((RETRIES-1))
+done
+
+if [ $RETRIES -eq 0 ]; then
+    error "Database failed to become ready in time."
+    exit 1
+fi
 log "✅ Database is ready."
 
 # --- 4. Initialize Panel ---
